@@ -1,0 +1,29 @@
+<!--pages/query-history/query-history.wxml-->
+<view class="container">
+  <view class="header-bar">
+    <text class="header-title">查询历史</text>
+    <text class="clear-btn" bindtap="clearHistory" wx:if="{{history.length > 0}}">清空</text>
+  </view>
+  <view class="history-list" wx:if="{{history.length > 0}}">
+    <view class="history-item" wx:for="{{history}}" wx:key="id" bindtap="reQuery" data-uid="{{item.targetUid}}">
+      <view class="item-avatar">👤</view>
+      <view class="item-info">
+        <view class="item-id">{{item.targetUid}}</view>
+        <view class="item-meta">
+          <text class="item-platform">{{item.platform}}</text>
+          <text class="item-dot">·</text>
+          <text class="item-type">{{item.queryType === 'uid' ? '账号查询' : '风险自查'}}</text>
+          <text class="item-dot">·</text>
+          <text class="item-time">{{item.timeText}}</text>
+        </view>
+      </view>
+      <view class="item-risk risk-{{item.riskLevel}}">{{item.riskText}}</view>
+    </view>
+  </view>
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">🔍</view>
+    <view class="empty-text">暂无查询记录</view>
+    <view class="empty-desc">去首页搜索账号UID吧</view>
+    <button class="empty-btn" bindtap="goIndex">去查询</button>
+  </view>
+</view>

@@ -1,0 +1,10 @@
+<!--pages/agreement/agreement.wxml-->
+<view class="agreement-page">
+  <view class="agreement-title">{{title}}</view>
+  <view class="agreement-update">更新日期：2026年9月</view>
+  <view class="section" wx:for="{{sections}}" wx:key="h">
+    <view class="section-h">{{item.h}}</view>
+    <view class="section-p">{{item.p}}</view>
+  </view>
+  <view class="agreement-end">— 全文完 —</view>
+</view>

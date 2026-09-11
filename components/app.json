@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/complaint/complaint",
+    "pages/result/result",
+    "pages/photo-match/photo-match",
+    "pages/vip/vip",
+    "pages/payment/payment",
+    "pages/profile/profile",
+    "pages/profile-edit/profile-edit",
+    "pages/query-history/query-history",
+    "pages/order-list/order-list",
+    "pages/complaint-detail/complaint-detail",
+    "pages/service-dispute/service-dispute",
+    "pages/service-contact/service-contact",
+    "pages/agreement/agreement"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1677FF",
+    "navigationBarTitleText": "查崩崩",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F7FA"
+  },
+  "tabBar": {
+    "color": "#888888",
+    "selectedColor": "#1677FF",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/complaint/complaint",
+        "text": "提交材料"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

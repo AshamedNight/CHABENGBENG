@@ -1,0 +1,151 @@
+<!--pages/complaint/complaint.wxml-->
+<view class="container">
+  <view class="page-header">
+    <view class="header-title">提交材料</view>
+    <view class="header-desc">提交材料永久免费，汇聚力量，让维权不再单打独斗</view>
+  </view>
+  <view class="form-card">
+    <!-- 被平台选择器 -->
+    <view class="input-group">
+      <text class="label">平台 <text class="required">*</text></text>
+      <view class="platform-selector" bindtap="openPlatformPicker">
+        <block wx:if="{{form.platform && form.platform !== '其他'}}">
+          <text class="selector-value">{{form.platform}}</text>
+          <text class="selector-change">✏️ 更换</text>
+        </block>
+        <block wx:elif="{{form.platform === '其他'}}">
+          <input
+            class="selector-input"
+            placeholder="请输入平台名称"
+            value="{{form.customPlatform}}"
+            bindinput="onCustomPlatformInput"
+            catchtap="stopPropagation"
+          />
+        </block>
+        <block wx:else>
+          <text class="selector-placeholder">请选择平台</text>
+          <text class="selector-arrow">›</text>
+        </block>
+      </view>
+    </view>
+    <!-- 对方UID -->
+    <view class="input-group">
+      <text class="label">对方UID <text class="required">*</text></text>
+      <input style="display: block; box-sizing: border-box; height: 90rpx; left: 0rpx; top: 0rpx"
+        class="form-input"
+        placeholder="请输入对方账号UID"
+        value="{{form.targetUid}}"
+        bindinput="onInput"
+        data-field="targetUid"
+      />
+    </view>
+    <!-- 人物照片（可选） -->
+    <view class="input-group">
+      <text class="label">人物照片 <text class="optional-tip">选填，最多4张</text></text>
+      <view class="img-grid">
+        <view class="img-filled" wx:for="{{form.personPhotos}}" wx:key="id">
+          <image src="{{item.url}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.url}}"></image>
+          <view class="delete-btn" bindtap="removePersonPhoto" data-index="{{index}}">×</view>
+        </view>
+        <view class="img-placeholder" bindtap="choosePersonPhoto" wx:if="{{form.personPhotos.length < 4}}">+</view>
+      </view>
+      <view class="img-tip">相关对象照片/头像截图，用于风险参考库</view>
+    </view>
+    <!-- 相关对象平台帐号截图（必填，最多2张） -->
+    <view class="input-group">
+      <text class="label">相关人平台帐号截图 <text class="required">*</text> <text class="optional-tip">包含头像和UID，最多2张</text></text>
+      <view class="img-grid">
+        <view class="img-filled screenshot-item" wx:for="{{form.accountScreenshots}}" wx:key="id">
+          <image src="{{item.url}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.url}}"></image>
+          <view class="delete-btn" bindtap="removeAccountScreenshot" data-index="{{index}}">×</view>
+        </view>
+        <view class="img-placeholder screenshot-placeholder" bindtap="chooseAccountScreenshot" wx:if="{{form.accountScreenshots.length < 2}}">
+          <text class="placeholder-icon">📱</text>
+          <text class="placeholder-text">上传帐号主页截图</text>
+        </view>
+      </view>
+      <view class="img-tip">相关人账号在对应平台的主页截图（需包含头像和UID），用于核验账号身份</view>
+    </view>
+    <!-- 证据照片（必填，最多9张） -->
+    <view class="input-group">
+      <text class="label">证据照片 <text class="required">*</text> <text class="optional-tip">最多9张</text></text>
+      <view class="img-grid">
+        <view class="img-filled" wx:for="{{form.evidenceImages}}" wx:key="id">
+          <image src="{{item.url}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.url}}"></image>
+          <view class="delete-btn" bindtap="removeEvidenceImage" data-index="{{index}}">×</view>
+        </view>
+        <view class="img-placeholder" bindtap="chooseEvidenceImage" wx:if="{{form.evidenceImages.length < 9}}">+</view>
+      </view>
+      <view class="img-tip">聊天记录、转账记录、交易截图等材料</view>
+    </view>
+    <!-- 说明 -->
+    <view class="input-group">
+      <text class="label">说明 <text class="required">*</text></text>
+      <textarea
+        class="form-textarea"
+        placeholder="请简要描述经过"
+        value="{{form.description}}"
+        bindinput="onInput"
+        data-field="description"
+        maxlength="500"
+      ></textarea>
+      <view class="char-count">{{form.description.length}}/500</view>
+    </view>
+  </view>
+  <!-- 授权开关 -->
+  <view class="switch-card">
+    <view class="switch-item">
+      <view class="switch-info">
+        <text class="switch-label">允许当事人联系我</text>
+        <text class="switch-desc" wx:if="{{form.allowContact}}">开启后，其他查询该对象的用户可看到您的昵称，并通过平台联系您共同维权</text>
+      </view>
+      <switch checked="{{form.allowContact}}" bindchange="onSwitchChange" data-field="allowContact" color="#1677FF"/>
+    </view>
+    <view class="switch-item">
+      <view class="switch-info">
+        <text class="switch-label">允许平台工作人员联系我</text>
+        <text class="switch-desc" wx:if="{{form.allowStaffContact}}">开启后，平台工作人员可通过预留方式联系您，协助跟进维权进展</text>
+      </view>
+      <switch checked="{{form.allowStaffContact}}" bindchange="onSwitchChange" data-field="allowStaffContact" color="#1677FF"/>
+    </view>
+    <view class="switch-item">
+      <view class="switch-info">
+        <text class="switch-label">同意将证据用于联合维权</text>
+        <text class="switch-desc" wx:if="{{form.agreeJointRights}}">开启后，您提交的证据可用于联合维权组，与其他受害者共同举证</text>
+      </view>
+      <switch checked="{{form.agreeJointRights}}" bindchange="onSwitchChange" data-field="agreeJointRights" color="#1677FF"/>
+    </view>
+  </view>
+  <!-- 提交按钮 -->
+  <view class="submit-section safe-bottom">
+    <button class="btn-primary" bindtap="submitComplaint" loading="{{submitting}}">🚀 提交材料</button>
+    <view class="submit-tip">* 提交即生成唯一编号，可在"我的"查看进度</view>
+  </view>
+  <!-- 平台选择器底部弹窗 -->
+  <view class="picker-mask" wx:if="{{showPlatformPicker}}" bindtap="closePlatformPicker">
+    <view class="picker-panel" catchtap="stopPropagation">
+      <view class="picker-header">
+        <text class="picker-title">选择平台</text>
+        <text class="picker-close" bindtap="closePlatformPicker">取消</text>
+      </view>
+      <scroll-view class="picker-body" scroll-y>
+        <block wx:for="{{platformCategories}}" wx:key="name" wx:for-item="category">
+          <view class="picker-category">{{category.name}}</view>
+          <view class="picker-options">
+            <view
+              class="picker-option {{form.platform === item ? 'selected' : ''}}"
+              wx:for="{{category.platforms}}"
+              wx:key="*this"
+              wx:for-item="item"
+              bindtap="selectPlatform"
+              data-platform="{{item}}"
+            >
+              <text>{{item}}</text>
+              <text class="option-check" wx:if="{{form.platform === item}}">✓</text>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+</view>

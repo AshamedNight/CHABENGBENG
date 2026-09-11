@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>风险查询 - 后台管理系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #1d2129; font-size: 14px; }
+
+/* 登录页 */
+.login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.login-box { background: #fff; border-radius: 12px; padding: 40px; width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.login-title { font-size: 24px; font-weight: 600; text-align: center; margin-bottom: 8px; color: #1d2129; }
+.login-subtitle { text-align: center; color: #86909c; margin-bottom: 32px; font-size: 13px; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; margin-bottom: 8px; color: #4e5969; font-weight: 500; }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid #e5e6eb; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.form-input:focus { border-color: #1677ff; }
+.btn-primary { width: 100%; padding: 12px; background: linear-gradient(135deg, #1677ff 0%, #0052d9 100%); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-error { color: #f53f3f; font-size: 13px; margin-top: 12px; text-align: center; min-height: 18px; }
+
+/* 主布局 */
+.app-layout { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: #001529; color: #fff; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 20px; text-align: center; border-bottom: 1px solid #1f3a5f; }
+.sidebar-logo h2 { font-size: 18px; font-weight: 600; }
+.sidebar-logo p { font-size: 12px; color: #8c9bb3; margin-top: 4px; }
+.sidebar-menu { padding: 12px 0; }
+.menu-item { display: flex; align-items: center; padding: 12px 24px; color: #8c9bb3; cursor: pointer; transition: all 0.2s; font-size: 14px; border-left: 3px solid transparent; }
+.menu-item:hover { color: #fff; background: #112a45; }
+.menu-item.active { color: #fff; background: #1677ff; border-left-color: #fff; }
+.menu-icon { margin-right: 10px; font-size: 16px; width: 20px; text-align: center; }
+.menu-badge { margin-left: auto; background: #f53f3f; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 10px; }
+
+.main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { height: 56px; background: #fff; border-bottom: 1px solid #e5e6eb; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.admin-info { display: flex; align-items: center; gap: 8px; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1677ff, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; }
+.admin-name { font-size: 14px; color: #1d2129; }
+.logout-btn { color: #86909c; cursor: pointer; font-size: 13px; }
+.logout-btn:hover { color: #f53f3f; }
+
+.page-content { padding: 24px; flex: 1; }
+
+/* 卡片 */
+.card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+
+/* 统计卡片 */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.stat-card.blue::before { background: #1677ff; }
+.stat-card.green::before { background: #00b42a; }
+.stat-card.orange::before { background: #ff7d00; }
+.stat-card.red::before { background: #f53f3f; }
+.stat-card.purple::before { background: #722ed1; }
+.stat-card.cyan::before { background: #14c9c9; }
+.stat-label { color: #86909c; font-size: 13px; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; color: #1d2129; }
+.stat-sub { font-size: 12px; color: #86909c; margin-top: 6px; }
+
+/* 表格 */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #f7f8fa; padding: 12px; text-align: left; font-weight: 600; color: #4e5969; font-size: 13px; border-bottom: 1px solid #e5e6eb; white-space: nowrap; }
+td { padding: 12px; border-bottom: 1px solid #f2f3f5; font-size: 13px; color: #1d2129; }
+tr:hover { background: #f7f8fa; }
+
+/* 标签 */
+.tag { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.tag-blue { background: #e8f3ff; color: #1677ff; }
+.tag-green { background: #e8ffea; color: #00b42a; }
+.tag-orange { background: #fff7e8; color: #ff7d00; }
+.tag-red { background: #ffece8; color: #f53f3f; }
+.tag-gray { background: #f2f3f5; color: #86909c; }
+.tag-gold { background: #fffbe6; color: #d48806; }
+
+/* 按钮 */
+.btn { padding: 6px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; display: inline-block; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-default { background: #fff; border-color: #e5e6eb; color: #4e5969; }
+.btn-default:hover { border-color: #1677ff; color: #1677ff; }
+.btn-primary-sm { background: #1677ff; color: #fff; }
+.btn-primary-sm:hover { background: #0052d9; }
+.btn-success { background: #00b42a; color: #fff; }
+.btn-success:hover { background: #009a22; }
+.btn-danger { background: #f53f3f; color: #fff; }
+.btn-danger:hover { background: #d9363e; }
+.btn-warning { background: #ff7d00; color: #fff; }
+.btn-warning:hover { background: #e67000; }
+
+/* 搜索栏 */
+.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.search-input { padding: 8px 12px; border: 1px solid #e5e6eb; border-radius: 6px; font-size: 13px; outline: none; width: 200px; }
+.search-input:focus { border-color: #1677ff; }
+.search-select { padding: 8px 12px; border: 1px solid #e5e6eb; border-radius: 6px; font-size: 13px; outline: none; background: #fff; cursor: pointer; }
+
+/* 分页 */
+.pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
+.page-btn { padding: 6px 12px; border: 1px solid #e5e6eb; background: #fff; border-radius: 4px; cursor: pointer; font-size: 13px; color: #4e5969; }
+.page-btn:hover { border-color: #1677ff; color: #1677ff; }
+.page-btn.active { background: #1677ff; color: #fff; border-color: #1677ff; }
+.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.page-info { font-size: 13px; color: #86909c; }
+
+/* 模态框 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: #fff; border-radius: 10px; width: 600px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #e5e6eb; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { cursor: pointer; color: #86909c; font-size: 20px; line-height: 1; }
+.modal-close:hover { color: #1d2129; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid #e5e6eb; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* 详情行 */
+.detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f2f3f5; }
+.detail-label { width: 120px; color: #86909c; flex-shrink: 0; }
+.detail-value { flex: 1; color: #1d2129; word-break: break-all; }
+
+/* 图片网格 */
+.img-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.img-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e6eb; cursor: pointer; }
+
+/* 图表 */
+.chart-container { margin-top: 16px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding: 0 10px; border-bottom: 1px solid #e5e6eb; }
+.chart-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.chart-bar { width: 100%; max-width: 40px; background: linear-gradient(180deg, #1677ff, #4096ff); border-radius: 4px 4px 0 0; transition: height 0.3s; position: relative; min-height: 2px; }
+.chart-bar-value { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #4e5969; white-space: nowrap; }
+.chart-bar-label { margin-top: 8px; font-size: 12px; color: #86909c; }
+
+/* 空状态 */
+.empty-state { text-align: center; padding: 60px 20px; color: #86909c; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; }
+
+/* Toast */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 6px; color: #fff; font-size: 14px; z-index: 2000; animation: slideDown 0.3s; }
+.toast.success { background: #00b42a; }
+.toast.error { background: #f53f3f; }
+.toast.info { background: #1677ff; }
+@keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.hidden { display: none !important; }
+.text-link { color: #1677ff; cursor: pointer; }
+.text-link:hover { text-decoration: underline; }
+.flex-gap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <div class="login-title">后台管理系统</div>
+    <div class="login-subtitle">风险查询小程序 - 管理后台</div>
+    <div class="form-group">
+      <label class="form-label">管理员账号</label>
+      <input type="text" class="form-input" id="loginUsername" placeholder="请输入管理员账号" value="admin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">管理员密码</label>
+      <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码" value="admin123">
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">登 录</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div id="appLayout" class="app-layout hidden">
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h2>管理后台</h2>
+      <p>风险查询系统</p>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+        <span class="menu-icon">📊</span><span>数据概览</span>
+      </div>
+      <div class="menu-item" data-page="users" onclick="switchPage('users')">
+        <span class="menu-icon">👥</span><span>用户管理</span>
+      </div>
+      <div class="menu-item" data-page="complaints" onclick="switchPage('complaints')">
+        <span class="menu-icon">📋</span><span>材料审核</span>
+        <span class="menu-badge" id="pendingComplaintBadge">0</span>
+      </div>
+      <div class="menu-item" data-page="orders" onclick="switchPage('orders')">
+        <span class="menu-icon">💰</span><span>订单管理</span>
+      </div>
+      <div class="menu-item" data-page="queries" onclick="switchPage('queries')">
+        <span class="menu-icon">🔍</span><span>查询记录</span>
+      </div>
+      <div class="menu-item" data-page="disputes" onclick="switchPage('disputes')">
+        <span class="menu-icon">⚖️</span><span>异议服务</span>
+        <span class="menu-badge" id="pendingDisputeBadge">0</span>
+      </div>
+      <div class="menu-item" data-page="contacts" onclick="switchPage('contacts')">
+        <span class="menu-icon">💬</span><span>联系服务</span>
+        <span class="menu-badge" id="pendingContactBadge">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">数据概览</div>
+      <div class="topbar-right">
+        <div class="admin-info">
+          <div class="admin-avatar">A</div>
+          <span class="admin-name" id="adminName">admin</span>
+        </div>
+        <span class="logout-btn" onclick="doLogout()">退出登录</span>
+      </div>
+    </div>
+    <div class="page-content" id="pageContent"></div>
+  </div>
+</div>
+
+<!-- 模态框容器 -->
+<div id="modalContainer"></div>
+<div id="toastContainer"></div>
+
+<script>
+// ========== 配置 ==========
+const API_BASE = 'http://localhost:8000';
+const PAGE_TITLES = {
+  dashboard: '数据概览', users: '用户管理', complaints: '材料审核',
+  orders: '订单管理', queries: '查询记录', disputes: '异议服务', contacts: '联系服务'
+};
+let currentPage = 'dashboard';
+let pageState = {};
+
+// ========== 工具函数 ==========
+function getToken() { return localStorage.getItem('admin_token') || ''; }
+function setToken(t) { localStorage.setItem('admin_token', t); }
+function clearToken() { localStorage.removeItem('admin_token'); }
+
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+async function api(url, options={}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers||{}) };
+  if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
+  try {
+    const res = await fetch(API_BASE + url, { ...options, headers });
+    const data = await res.json();
+    if (res.status === 401) { doLogout(); showToast('登录已过期，请重新登录', 'error'); return null; }
+    if (data.code !== 0) { showToast(data.message || '请求失败', 'error'); return null; }
+    return data;
+  } catch(e) {
+    showToast('网络请求失败，请检查后端服务是否启动', 'error');
+    console.error(e);
+    return null;
+  }
+}
+
+function fmtTime(s) {
+  if (!s) return '-';
+  return s.replace('T', ' ').substring(0, 19);
+}
+
+function riskTag(level) {
+  const map = { high: ['tag-red','高风险'], medium: ['tag-orange','中风险'], low: ['tag-blue','低风险'], none: ['tag-gray','暂无数据'] };
+  const [cls, txt] = map[level] || map.none;
+  return `<span class="tag ${cls}">${txt}</span>`;
+}
+
+function statusTag(status) {
+  const map = { '待处理': 'tag-orange', '处理中': 'tag-blue', '处理完毕': 'tag-green', '已驳回': 'tag-red' };
+  return `<span class="tag ${map[status]||'tag-gray'}">${status}</span>`;
+}
+
+function payStatusTag(s) {
+  const map = { pending: ['tag-orange','待支付'], success: ['tag-green','已支付'], failed: ['tag-red','支付失败'], refunded: ['tag-gray','已退款'] };
+  const [cls, txt] = map[s] || ['tag-gray', s];
+  return `<span class="tag ${cls}">${txt}</span>`;
+}
+
+function serviceStatusTag(s) {
+  const map = { pending: ['tag-orange','待处理'], processing: ['tag-blue','处理中'], done: ['tag-green','已完成'] };
+  const [cls, txt] = map[s] || ['tag-gray', s];
+  return `<span class="tag ${cls}">${txt}</span>`;
+}
+
+// ========== 登录/登出 ==========
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  if (!username || !password) { errEl.textContent = '请输入账号和密码'; return; }
+  btn.disabled = true; btn.textContent = '登录中...';
+  errEl.textContent = '';
+  const res = await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+  btn.disabled = false; btn.textContent = '登 录';
+  if (res && res.data) {
+    setToken(res.data.token);
+    document.getElementById('adminName').textContent = res.data.username;
+    enterApp();
+    showToast('登录成功', 'success');
+  }
+}
+
+function doLogout() {
+  clearToken();
+  document.getElementById('appLayout').classList.add('hidden');
+  document.getElementById('loginPage').classList.remove('hidden');
+}
+
+function enterApp() {
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('appLayout').classList.remove('hidden');
+  switchPage('dashboard');
+}
+
+// 回车登录
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginPage').classList.contains('hidden')) doLogin();
+});
+
+// ========== 页面切换 ==========
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.menu-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[page];
+  pageState = {};
+  renderPage();
+}
+
+function renderPage() {
+  const renderers = { dashboard: renderDashboard, users: renderUsers, complaints: renderComplaints, orders: renderOrders, queries: renderQueries, disputes: renderDisputes, contacts: renderContacts };
+  (renderers[currentPage] || renderDashboard)();
+}
+
+// ========== 仪表盘 ==========
+async function renderDashboard() {
+  const el = document.getElementById('pageContent');
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">加载中...</div></div>';
+  const res = await api('/api/admin/dashboard');
+  if (!res) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">数据加载失败</div></div>'; return; }
+  const d = res.data;
+  // 更新角标
+  document.getElementById('pendingComplaintBadge').textContent = d.pending_complaints;
+  document.getElementById('pendingComplaintBadge').style.display = d.pending_complaints > 0 ? '' : 'none';
+  document.getElementById('pendingDisputeBadge').textContent = d.pending_disputes;
+  document.getElementById('pendingDisputeBadge').style.display = d.pending_disputes > 0 ? '' : 'none';
+  document.getElementById('pendingContactBadge').textContent = d.pending_contacts;
+  document.getElementById('pendingContactBadge').style.display = d.pending_contacts > 0 ? '' : 'none';
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-label">总用户数</div><div class="stat-value">${d.total_users}</div><div class="stat-sub">近7天新增 ${d.new_users_7d}</div></div>
+      <div class="stat-card gold"><div class="stat-label">VIP用户</div><div class="stat-value">${d.total_vip_users}</div><div class="stat-sub">占比 ${d.total_users ? ((d.total_vip_users/d.total_users)*100).toFixed(1) : 0}%</div></div>
+      <div class="stat-card orange"><div class="stat-label">材料总数</div><div class="stat-value">${d.total_complaints}</div><div class="stat-sub">待审核 ${d.pending_complaints} · 近7天 ${d.new_complaints_7d}</div></div>
+      <div class="stat-card cyan"><div class="stat-label">查询总次数</div><div class="stat-value">${d.total_queries}</div><div class="stat-sub">用户风险查询累计</div></div>
+      <div class="stat-card green"><div class="stat-label">订单总数</div><div class="stat-value">${d.total_orders}</div><div class="stat-sub">已支付 ${d.paid_orders} · 近7天 ${d.new_orders_7d}</div></div>
+      <div class="stat-card red"><div class="stat-label">总收入</div><div class="stat-value">¥${d.total_revenue}</div><div class="stat-sub">已支付订单累计</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">近7天数据趋势</div>
+      <div class="chart-container">
+        <div class="chart-bars" id="chartBars"></div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card purple" onclick="switchPage('disputes')" style="cursor:pointer"><div class="stat-label">待处理异议</div><div class="stat-value">${d.pending_disputes}</div><div class="stat-sub">点击查看详情 →</div></div>
+      <div class="stat-card purple" onclick="switchPage('contacts')" style="cursor:pointer"><div class="stat-label">待处理联系</div><div class="stat-value">${d.pending_contacts}</div><div class="stat-sub">点击查看详情 →</div></div>
+    </div>
+  `;
+  // 渲染图表
+  const maxVal = Math.max(...d.daily_data.map(x => Math.max(x.users, x.complaints, x.orders)), 1);
+  document.getElementById('chartBars').innerHTML = d.daily_data.map(x => `
+    <div class="chart-bar-group">
+      <div class="chart-bar" style="height:${(x.users/maxVal*100)||2}%"><span class="chart-bar-value">${x.users}</span></div>
+      <div class="chart-bar-label">${x.date}</div>
+    </div>
+  `).join('');
+}
+
+// ========== 用户管理 ==========
+async function renderUsers() {
+  if (!pageState.users) pageState.users = { page: 1, pageSize: 15, keyword: '', isVip: '' };
+  const s = pageState.users;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <input class="search-input" placeholder="搜索UID/昵称" value="${s.keyword}" id="userKeyword">
+        <select class="search-select" id="userVipFilter">
+          <option value="">全部用户</option>
+          <option value="true" ${s.isVip==='true'?'selected':''}>VIP用户</option>
+          <option value="false" ${s.isVip==='false'?'selected':''}>普通用户</option>
+        </select>
+        <button class="btn btn-primary-sm" onclick="searchUsers()">搜索</button>
+      </div>
+      <div id="userTable"></div>
+    </div>
+  `;
+  await loadUsers();
+}
+
+async function loadUsers() {
+  const s = pageState.users;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, keyword: s.keyword, is_vip: s.isVip });
+  const res = await api('/api/admin/users?' + params);
+  const el = document.getElementById('userTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无用户数据</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>ID</th><th>UID</th><th>昵称</th><th>VIP状态</th><th>VIP到期</th><th>剩余次数</th><th>注册时间</th><th>操作</th></tr></thead>
+      <tbody>${list.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.uid}</td>
+          <td>${u.nickname}</td>
+          <td>${u.is_vip ? '<span class="tag tag-gold">👑 VIP</span>' : '<span class="tag tag-gray">普通</span>'}</td>
+          <td>${u.vip_expire_at ? fmtTime(u.vip_expire_at) : '-'}</td>
+          <td>${u.vip_query_count}</td>
+          <td>${fmtTime(u.created_at)}</td>
+          <td class="flex-gap">
+            <span class="text-link" onclick="viewUser(${u.id})">详情</span>
+            <span class="text-link" onclick="setUserVip(${u.id}, ${!u.is_vip})">${u.is_vip ? '取消VIP' : '开通VIP'}</span>
+          </td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goUserPage')}
+  `;
+}
+
+function searchUsers() {
+  pageState.users.keyword = document.getElementById('userKeyword').value.trim();
+  pageState.users.isVip = document.getElementById('userVipFilter').value;
+  pageState.users.page = 1;
+  loadUsers();
+}
+function goUserPage(p) { pageState.users.page = p; loadUsers(); }
+
+async function viewUser(id) {
+  const res = await api('/api/admin/users/' + id);
+  if (!res) return;
+  const u = res.data;
+  showModal('用户详情', `
+    <div class="detail-row"><div class="detail-label">用户ID</div><div class="detail-value">${u.id}</div></div>
+    <div class="detail-row"><div class="detail-label">UID</div><div class="detail-value">${u.uid}</div></div>
+    <div class="detail-row"><div class="detail-label">昵称</div><div class="detail-value">${u.nickname}</div></div>
+    <div class="detail-row"><div class="detail-label">VIP状态</div><div class="detail-value">${u.is_vip ? '👑 VIP会员' : '普通用户'}</div></div>
+    <div class="detail-row"><div class="detail-label">VIP到期</div><div class="detail-value">${u.vip_expire_at ? fmtTime(u.vip_expire_at) : '-'}</div></div>
+    <div class="detail-row"><div class="detail-label">剩余查询次数</div><div class="detail-value">${u.vip_query_count} 次</div></div>
+    <div class="detail-row"><div class="detail-label">提交材料数</div><div class="detail-value">${u.complaint_count}</div></div>
+    <div class="detail-row"><div class="detail-label">查询次数</div><div class="detail-value">${u.query_count}</div></div>
+    <div class="detail-row"><div class="detail-label">订单数</div><div class="detail-value">${u.order_count}</div></div>
+    <div class="detail-row"><div class="detail-label">累计消费</div><div class="detail-value">¥${u.total_spent}</div></div>
+    <div class="detail-row"><div class="detail-label">注册时间</div><div class="detail-value">${fmtTime(u.created_at)}</div></div>
+  `, [{text:'关闭', class:'btn-default', onclick:'closeModal()'}]);
+}
+
+async function setUserVip(id, isVip) {
+  const action = isVip ? '开通' : '取消';
+  if (!confirm(`确定要${action}该用户的VIP吗？`)) return;
+  const body = { is_vip: isVip };
+  if (isVip) { body.days = 365; body.query_count = 80; }
+  const res = await api('/api/admin/users/' + id + '/vip', { method: 'POST', body: JSON.stringify(body) });
+  if (res) { showToast(`VIP${action}成功`, 'success'); loadUsers(); }
+}
+
+// ========== 材料审核 ==========
+async function renderComplaints() {
+  if (!pageState.complaints) pageState.complaints = { page: 1, pageSize: 15, status: '', keyword: '' };
+  const s = pageState.complaints;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <input class="search-input" placeholder="搜索UID/平台" value="${s.keyword}" id="complaintKeyword">
+        <select class="search-select" id="complaintStatus">
+          <option value="">全部状态</option>
+          <option value="待处理" ${s.status==='待处理'?'selected':''}>待处理</option>
+          <option value="处理中" ${s.status==='处理中'?'selected':''}>处理中</option>
+          <option value="处理完毕" ${s.status==='处理完毕'?'selected':''}>处理完毕</option>
+          <option value="已驳回" ${s.status==='已驳回'?'selected':''}>已驳回</option>
+        </select>
+        <button class="btn btn-primary-sm" onclick="searchComplaints()">搜索</button>
+      </div>
+      <div id="complaintTable"></div>
+    </div>
+  `;
+  await loadComplaints();
+}
+
+async function loadComplaints() {
+  const s = pageState.complaints;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, status: s.status, keyword: s.keyword });
+  const res = await api('/api/admin/complaints?' + params);
+  const el = document.getElementById('complaintTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无材料数据</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>材料编号</th><th>平台</th><th>对象UID</th><th>提交用户</th><th>状态</th><th>允许联系</th><th>提交时间</th><th>操作</th></tr></thead>
+      <tbody>${list.map(c => `
+        <tr>
+          <td>${c.order_no}</td>
+          <td>${c.platform}</td>
+          <td>${c.target_uid}</td>
+          <td>${c.user_nickname} (${c.user_uid})</td>
+          <td>${statusTag(c.status)}</td>
+          <td>${c.allow_contact ? '是' : '否'}</td>
+          <td>${fmtTime(c.created_at)}</td>
+          <td class="flex-gap">
+            <span class="text-link" onclick="viewComplaint(${c.id})">详情</span>
+            ${c.status==='待处理' ? `<span class="text-link" onclick="reviewComplaint(${c.id},'处理中')">受理</span>` : ''}
+            ${c.status!=='处理完毕' ? `<span class="text-link" onclick="reviewComplaint(${c.id},'处理完毕')">通过</span>` : ''}
+            ${c.status!=='已驳回' ? `<span class="text-link" style="color:#f53f3f" onclick="reviewComplaint(${c.id},'已驳回')">驳回</span>` : ''}
+          </td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goComplaintPage')}
+  `;
+}
+
+function searchComplaints() {
+  pageState.complaints.keyword = document.getElementById('complaintKeyword').value.trim();
+  pageState.complaints.status = document.getElementById('complaintStatus').value;
+  pageState.complaints.page = 1;
+  loadComplaints();
+}
+function goComplaintPage(p) { pageState.complaints.page = p; loadComplaints(); }
+
+async function viewComplaint(id) {
+  const res = await api('/api/admin/complaints/' + id);
+  if (!res) return;
+  const c = res.data;
+  const renderImgs = (arr, label) => arr && arr.length ? `
+    <div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">
+      <div class="img-grid">${arr.map(u => `<img class="img-thumb" src="${u}" onclick="window.open('${u}')">`).join('')}</div>
+    </div></div>` : '';
+  showModal('材料详情 - ' + c.order_no, `
+    <div class="detail-row"><div class="detail-label">材料编号</div><div class="detail-value">${c.order_no}</div></div>
+    <div class="detail-row"><div class="detail-label">平台</div><div class="detail-value">${c.platform}</div></div>
+    <div class="detail-row"><div class="detail-label">对象UID</div><div class="detail-value">${c.target_uid}</div></div>
+    <div class="detail-row"><div class="detail-label">提交用户</div><div class="detail-value">${c.user.nickname} (${c.user.uid})</div></div>
+    <div class="detail-row"><div class="detail-label">状态</div><div class="detail-value">${statusTag(c.status)}</div></div>
+    <div class="detail-row"><div class="detail-label">说明</div><div class="detail-value">${c.description || '-'}</div></div>
+    <div class="detail-row"><div class="detail-label">允许当事人联系</div><div class="detail-value">${c.allow_contact ? '是' : '否'}</div></div>
+    <div class="detail-row"><div class="detail-label">允许工作人员联系</div><div class="detail-value">${c.allow_staff_contact ? '是' : '否'}</div></div>
+    <div class="detail-row"><div class="detail-label">同意联合维权</div><div class="detail-value">${c.agree_joint_rights ? '是' : '否'}</div></div>
+    ${renderImgs(c.person_photos, '人物照片')}
+    ${renderImgs(c.account_screenshots, '账号截图')}
+    ${renderImgs(c.evidence_images, '证据图片')}
+    <div class="detail-row"><div class="detail-label">提交时间</div><div class="detail-value">${fmtTime(c.created_at)}</div></div>
+  `, [
+    { text: '受理', class: 'btn btn-primary-sm', onclick: `reviewComplaint(${c.id},'处理中');closeModal()` },
+    { text: '通过', class: 'btn btn-success', onclick: `reviewComplaint(${c.id},'处理完毕');closeModal()` },
+    { text: '驳回', class: 'btn btn-danger', onclick: `reviewComplaint(${c.id},'已驳回');closeModal()` },
+    { text: '关闭', class: 'btn btn-default', onclick: 'closeModal()' }
+  ]);
+}
+
+async function reviewComplaint(id, status) {
+  if (!confirm(`确定将该材料状态改为"${status}"吗？`)) return;
+  const res = await api('/api/admin/complaints/' + id + '/review', { method: 'POST', body: JSON.stringify({ status }) });
+  if (res) { showToast('审核操作成功', 'success'); loadComplaints(); }
+}
+
+// ========== 订单管理 ==========
+async function renderOrders() {
+  if (!pageState.orders) pageState.orders = { page: 1, pageSize: 15, payStatus: '', productType: '' };
+  const s = pageState.orders;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <select class="search-select" id="orderPayStatus">
+          <option value="">全部支付状态</option>
+          <option value="pending" ${s.payStatus==='pending'?'selected':''}>待支付</option>
+          <option value="success" ${s.payStatus==='success'?'selected':''}>已支付</option>
+          <option value="failed" ${s.payStatus==='failed'?'selected':''}>支付失败</option>
+        </select>
+        <select class="search-select" id="orderProductType">
+          <option value="">全部产品</option>
+          <option value="vip_year" ${s.productType==='vip_year'?'selected':''}>VIP年卡</option>
+          <option value="single_query" ${s.productType==='single_query'?'selected':''}>单次查询</option>
+          <option value="dispute_service" ${s.productType==='dispute_service'?'selected':''}>异议服务</option>
+          <option value="contact_service" ${s.productType==='contact_service'?'selected':''}>联系服务</option>
+        </select>
+        <button class="btn btn-primary-sm" onclick="searchOrders()">搜索</button>
+      </div>
+      <div id="orderTable"></div>
+    </div>
+  `;
+  await loadOrders();
+}
+
+async function loadOrders() {
+  const s = pageState.orders;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, pay_status: s.payStatus, product_type: s.productType });
+  const res = await api('/api/admin/orders?' + params);
+  const el = document.getElementById('orderTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无订单数据</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>订单号</th><th>产品</th><th>金额</th><th>支付状态</th><th>用户</th><th>关联信息</th><th>支付时间</th><th>创建时间</th></tr></thead>
+      <tbody>${list.map(o => `
+        <tr>
+          <td>${o.order_id}</td>
+          <td>${o.product_name}</td>
+          <td style="color:#f53f3f;font-weight:600">¥${o.amount}</td>
+          <td>${payStatusTag(o.pay_status)}</td>
+          <td>${o.user_nickname} (${o.user_uid})</td>
+          <td>${o.single_query_target_uid ? '查询:'+o.single_query_target_uid : (o.related_complaint_id ? '材料ID:'+o.related_complaint_id : (o.vip_duration_days ? o.vip_duration_days+'天' : '-'))}</td>
+          <td>${o.pay_time ? fmtTime(o.pay_time) : '-'}</td>
+          <td>${fmtTime(o.created_at)}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goOrderPage')}
+  `;
+}
+
+function searchOrders() {
+  pageState.orders.payStatus = document.getElementById('orderPayStatus').value;
+  pageState.orders.productType = document.getElementById('orderProductType').value;
+  pageState.orders.page = 1;
+  loadOrders();
+}
+function goOrderPage(p) { pageState.orders.page = p; loadOrders(); }
+
+// ========== 查询记录 ==========
+async function renderQueries() {
+  if (!pageState.queries) pageState.queries = { page: 1, pageSize: 20, keyword: '' };
+  const s = pageState.queries;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <input class="search-input" placeholder="搜索UID/平台" value="${s.keyword}" id="queryKeyword">
+        <button class="btn btn-primary-sm" onclick="searchQueries()">搜索</button>
+      </div>
+      <div id="queryTable"></div>
+    </div>
+  `;
+  await loadQueries();
+}
+
+async function loadQueries() {
+  const s = pageState.queries;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, keyword: s.keyword });
+  const res = await api('/api/admin/query-history?' + params);
+  const el = document.getElementById('queryTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无查询记录</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>ID</th><th>查询对象UID</th><th>平台</th><th>风险等级</th><th>查询类型</th><th>扣费类型</th><th>查询用户</th><th>查询时间</th></tr></thead>
+      <tbody>${list.map(q => `
+        <tr>
+          <td>${q.id}</td>
+          <td>${q.target_uid}</td>
+          <td>${q.platform}</td>
+          <td>${riskTag(q.risk_level)}</td>
+          <td>${q.query_type === 'uid' ? '账号查询' : '照片匹配'}</td>
+          <td>${q.cost_type === 'vip' ? '<span class="tag tag-gold">VIP</span>' : (q.cost_type === 'single' ? '<span class="tag tag-blue">单次</span>' : '<span class="tag tag-gray">免费</span>')}</td>
+          <td>${q.user_nickname} (${q.user_uid})</td>
+          <td>${fmtTime(q.created_at)}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goQueryPage')}
+  `;
+}
+
+function searchQueries() { pageState.queries.keyword = document.getElementById('queryKeyword').value.trim(); pageState.queries.page = 1; loadQueries(); }
+function goQueryPage(p) { pageState.queries.page = p; loadQueries(); }
+
+// ========== 异议服务 ==========
+async function renderDisputes() {
+  if (!pageState.disputes) pageState.disputes = { page: 1, pageSize: 15, status: '' };
+  const s = pageState.disputes;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <select class="search-select" id="disputeStatus">
+          <option value="">全部状态</option>
+          <option value="pending" ${s.status==='pending'?'selected':''}>待处理</option>
+          <option value="processing" ${s.status==='processing'?'selected':''}>处理中</option>
+          <option value="done" ${s.status==='done'?'selected':''}>已完成</option>
+        </select>
+        <button class="btn btn-primary-sm" onclick="searchDisputes()">搜索</button>
+      </div>
+      <div id="disputeTable"></div>
+    </div>
+  `;
+  await loadDisputes();
+}
+
+async function loadDisputes() {
+  const s = pageState.disputes;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, status: s.status });
+  const res = await api('/api/admin/disputes?' + params);
+  const el = document.getElementById('disputeTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无异议服务</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>ID</th><th>关联材料ID</th><th>异议原因</th><th>联系方式</th><th>状态</th><th>提交用户</th><th>提交时间</th><th>操作</th></tr></thead>
+      <tbody>${list.map(d => `
+        <tr>
+          <td>${d.id}</td>
+          <td>${d.complaint_id}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.reason}">${d.reason || '-'}</td>
+          <td>${d.contact_info || '-'}</td>
+          <td>${serviceStatusTag(d.status)}</td>
+          <td>${d.user_nickname}</td>
+          <td>${fmtTime(d.created_at)}</td>
+          <td class="flex-gap">
+            ${d.status !== 'processing' ? `<span class="text-link" onclick="handleDispute(${d.id},'processing')">开始处理</span>` : ''}
+            ${d.status !== 'done' ? `<span class="text-link" onclick="handleDispute(${d.id},'done')">标记完成</span>` : ''}
+          </td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goDisputePage')}
+  `;
+}
+
+function searchDisputes() { pageState.disputes.status = document.getElementById('disputeStatus').value; pageState.disputes.page = 1; loadDisputes(); }
+function goDisputePage(p) { pageState.disputes.page = p; loadDisputes(); }
+async function handleDispute(id, status) {
+  const res = await api('/api/admin/disputes/' + id + '/handle', { method: 'POST', body: JSON.stringify({ status }) });
+  if (res) { showToast('操作成功', 'success'); loadDisputes(); }
+}
+
+// ========== 联系服务 ==========
+async function renderContacts() {
+  if (!pageState.contacts) pageState.contacts = { page: 1, pageSize: 15, status: '' };
+  const s = pageState.contacts;
+  const el = document.getElementById('pageContent');
+  el.innerHTML = `
+    <div class="card">
+      <div class="search-bar">
+        <select class="search-select" id="contactStatus">
+          <option value="">全部状态</option>
+          <option value="pending" ${s.status==='pending'?'selected':''}>待处理</option>
+          <option value="processing" ${s.status==='processing'?'selected':''}>处理中</option>
+          <option value="done" ${s.status==='done'?'selected':''}>已完成</option>
+        </select>
+        <button class="btn btn-primary-sm" onclick="searchContacts()">搜索</button>
+      </div>
+      <div id="contactTable"></div>
+    </div>
+  `;
+  await loadContacts();
+}
+
+async function loadContacts() {
+  const s = pageState.contacts;
+  const params = new URLSearchParams({ page: s.page, page_size: s.pageSize, status: s.status });
+  const res = await api('/api/admin/contacts?' + params);
+  const el = document.getElementById('contactTable');
+  if (!res) { el.innerHTML = '<div class="empty-state">加载失败</div>'; return; }
+  const { list, total } = res.data;
+  if (list.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无联系服务</div></div>'; return; }
+  el.innerHTML = `
+    <div class="table-wrapper"><table>
+      <thead><tr><th>ID</th><th>关联材料ID</th><th>留言内容</th><th>联系方式</th><th>状态</th><th>提交用户</th><th>提交时间</th><th>操作</th></tr></thead>
+      <tbody>${list.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.complaint_id}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.message}">${c.message || '-'}</td>
+          <td>${c.contact_info || '-'}</td>
+          <td>${serviceStatusTag(c.status)}</td>
+          <td>${c.user_nickname}</td>
+          <td>${fmtTime(c.created_at)}</td>
+          <td class="flex-gap">
+            ${c.status !== 'processing' ? `<span class="text-link" onclick="handleContact(${c.id},'processing')">开始处理</span>` : ''}
+            ${c.status !== 'done' ? `<span class="text-link" onclick="handleContact(${c.id},'done')">标记完成</span>` : ''}
+          </td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>
+    ${renderPagination(s.page, total, s.pageSize, 'goContactPage')}
+  `;
+}
+
+function searchContacts() { pageState.contacts.status = document.getElementById('contactStatus').value; pageState.contacts.page = 1; loadContacts(); }
+function goContactPage(p) { pageState.contacts.page = p; loadContacts(); }
+async function handleContact(id, status) {
+  const res = await api('/api/admin/contacts/' + id + '/handle', { method: 'POST', body: JSON.stringify({ status }) });
+  if (res) { showToast('操作成功', 'success'); loadContacts(); }
+}
+
+// ========== 分页组件 ==========
+function renderPagination(page, total, pageSize, fn) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return `<div class="pagination"><span class="page-info">共 ${total} 条</span></div>`;
+  let pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= page-2 && i <= page+2)) pages.push(i);
+    else if (pages[pages.length-1] !== '...') pages.push('...');
+  }
+  return `<div class="pagination">
+    <button class="page-btn" ${page<=1?'disabled':''} onclick="${fn}(${page-1})">上一页</button>
+    ${pages.map(p => p === '...' ? '<span class="page-info">...</span>' : `<button class="page-btn ${p===page?'active':''}" onclick="${fn}(${p})">${p}</button>`).join('')}
+    <button class="page-btn" ${page>=totalPages?'disabled':''} onclick="${fn}(${page+1})">下一页</button>
+    <span class="page-info">共 ${total} 条</span>
+  </div>`;
+}
+
+// ========== 模态框 ==========
+function showModal(title, bodyHtml, footerBtns=[]) {
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = `
+    <div class="modal-mask" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-header"><div class="modal-title">${title}</div><span class="modal-close" onclick="closeModal()">×</span></div>
+        <div class="modal-body">${bodyHtml}</div>
+        ${footerBtns.length ? `<div class="modal-footer">${footerBtns.map(b => `<button class="${b.class||'btn btn-default'}" onclick="${b.onclick}">${b.text}</button>`).join('')}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+function closeModal() { document.getElementById('modalContainer').innerHTML = ''; }
+
+// ========== 初始化 ==========
+if (getToken()) { enterApp(); }
+</script>
+</body>
+</html>

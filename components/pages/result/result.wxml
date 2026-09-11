@@ -1,0 +1,171 @@
+<!--pages/result/result.wxml-->
+<view class="container">
+  <!-- 未收录提示 -->
+  <view class="not-found-card" wx:if="{{targetData && !targetData.found}}">
+    <view class="not-found-icon">🔍</view>
+    <view class="not-found-title">未找到该账号</view>
+    <view class="not-found-desc">该账号暂无相关记录，您可以提交材料成为首个记录人</view>
+    <button class="btn-primary not-found-btn" bindtap="goComplaint">去提交材料</button>
+  </view>
+
+  <block wx:if="{{targetData && targetData.found}}">
+    <!-- 目标账号基础信息（免费可见） -->
+    <view class="target-card">
+      <view class="target-header">
+        <view class="target-avatar">👤</view>
+        <view class="target-info">
+          <view class="target-uid">{{targetUid}}</view>
+          <view class="target-meta">
+            <text class="platform-tag">{{targetData.data.platform}}</text>
+            <text class="risk-tag risk-{{targetData.data.riskLevel}}">{{riskLevelText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 累计统计（免费可见数字） -->
+      <view class="complaint-count">
+        <text class="count-label">该账号风险提示累计</text>
+        <text class="count-num">{{targetData.data.complaintCount}}</text>
+        <text class="count-unit">次</text>
+      </view>
+    </view>
+
+    <!-- 历史记录 -->
+    <view class="records-card">
+      <view class="records-header">
+        <text class="records-title">历史记录</text>
+        <text class="records-count">共{{targetData.data.records.length}}条</text>
+      </view>
+
+      <!-- 付费用户：完整记录列表 -->
+      <view class="records-list" wx:if="{{isVip || isUnlocked}}">
+        <view
+          class="record-item"
+          wx:for="{{targetData.data.records}}"
+          wx:key="id"
+          bindtap="onRecordTap"
+          data-record="{{item}}"
+        >
+          <view class="record-top">
+            <view class="record-user">
+              <text class="user-avatar">👤</text>
+              <text class="user-nickname">{{item.allowContact ? item.userNickname : '匿名用户'}}</text>
+            </view>
+            <text class="record-status status-{{item.status === '处理完毕' ? 'done' : 'pending'}}">{{item.status}}</text>
+          </view>
+          <view class="record-no">编号：{{item.orderNo}}</view>
+          <view class="record-time">{{item.createdAt}}</view>
+          <!-- 证据图片缩略图 -->
+          <view class="record-evidence" wx:if="{{item.evidenceImages && item.evidenceImages.length > 0}}">
+            <block wx:for="{{item.evidenceImages}}" wx:key="*this" wx:for-item="img" wx:for-index="imgIdx">
+              <image
+                wx:if="{{imgIdx < 3}}"
+                class="evidence-thumb"
+                src="{{img}}"
+                mode="aspectFill"
+                catchtap="previewEvidence"
+                data-url="{{img}}"
+                data-urls="{{item.evidenceImages}}"
+              ></image>
+              <view class="evidence-more" wx:if="{{imgIdx === 3}}">+{{item.evidenceImages.length - 3}}</view>
+            </block>
+          </view>
+          <view class="record-arrow">查看维权服务 ›</view>
+        </view>
+      </view>
+
+      <!-- 免费用户：模糊锁定 -->
+      <view class="records-locked" wx:else bindtap="showPayModal">
+        <view class="locked-tip">
+          <text class="lock-icon">🔒</text>
+          <text class="lock-text">开通VIP或单次查询，查看全部{{targetData.data.records.length}}条记录</text>
+        </view>
+        <view class="locked-records blur-content">
+          <view class="record-item" wx:for="{{[1,2,3]}}" wx:key="*this">
+            <view class="record-top">
+              <view class="record-user">
+                <text class="user-avatar">👤</text>
+                <text class="user-nickname">匿名用户</text>
+              </view>
+              <text class="record-status status-done">处理完毕</text>
+            </view>
+            <view class="record-no">编号：W20260817001</view>
+            <view class="record-time">2026-08-17 14:30</view>
+          </view>
+        </view>
+        <button class="btn-primary unlock-btn">🔓 解锁完整记录</button>
+      </view>
+
+      <!-- 维权服务说明（付费用户可见） -->
+      <view class="service-tip" wx:if="{{isVip || isUnlocked}}">
+        <text class="service-icon">💡</text>
+        <text class="service-text">需要进一步维权？可对每条记录提起异议或联系处理人员（单独付费299元/次）</text>
+      </view>
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="footer-tip">
+      便捷提交材料，汇聚力量，让维权不再单打独斗
+    </view>
+  </block>
+
+  <!-- 付费解锁弹窗 -->
+  <view class="pay-modal-mask" wx:if="{{showPay}}" bindtap="hidePayModal">
+    <view class="pay-modal" catchtap="stopPropagation">
+      <view class="pay-close" bindtap="hidePayModal">×</view>
+      <view class="pay-title">解锁完整查询报告</view>
+      <view class="pay-benefits">
+        <view class="benefit-item">✅ 查看历史记录及证据</view>
+        <view class="benefit-item">✅ 风险自查匹配详情</view>
+        <view class="benefit-item">✅ 风险等级分析</view>
+        <view class="benefit-item">✅ 年卡80次查询额度（50次+赠30次）</view>
+      </view>
+      <view class="pay-option pay-option-vip {{selectedOption === 'vip' ? 'selected' : ''}}" bindtap="selectOption" data-option="vip">
+        <view class="option-badge">推荐</view>
+        <view class="option-main">
+          <view class="option-name">开通VIP年卡</view>
+          <view class="option-desc">¥399/年 · 80次查询（50次+赠30次）</view>
+        </view>
+      </view>
+      <view class="pay-option {{selectedOption === 'single' ? 'selected' : ''}}" bindtap="selectOption" data-option="single">
+        <view class="option-main">
+          <view class="option-name">单次查询</view>
+          <view class="option-desc">¥9.9/次 · 本次查询解锁全部内容</view>
+        </view>
+      </view>
+      <button class="btn-primary pay-confirm" bindtap="confirmPay">
+        {{selectedOption === 'vip' ? '立即开通VIP ¥399' : '单次查询 ¥9.9'}}
+      </button>
+      <view class="pay-agreement">开通即表示同意《VIP会员服务协议》</view>
+    </view>
+  </view>
+
+  <!-- 维权服务操作菜单 -->
+  <view class="action-mask" wx:if="{{showActionMenu}}" bindtap="closeActionMenu">
+    <view class="action-panel" catchtap="stopPropagation">
+      <view class="action-header">
+        <text class="action-title">维权服务</text>
+        <text class="action-subtitle">材料编号：{{selectedRecord.orderNo}}</text>
+      </view>
+      <view class="action-list">
+        <view class="action-item" bindtap="goDispute">
+          <view class="action-icon">📝</view>
+          <view class="action-info">
+            <view class="action-name">提起异议</view>
+            <view class="action-desc">对该记录的真实性/处理结果提出异议</view>
+          </view>
+          <view class="action-price">¥299</view>
+        </view>
+        <view class="action-item" bindtap="goContact">
+          <view class="action-icon">💬</view>
+          <view class="action-info">
+            <view class="action-name">联系处理</view>
+            <view class="action-desc">联系该材料的处理人员，沟通维权进展</view>
+          </view>
+          <view class="action-price">¥299</view>
+        </view>
+      </view>
+      <view class="action-cancel" bindtap="closeActionMenu">取消</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,23 @@
+# ===== 敏感信息（绝对不能上传）=====
+backend/.env
+*.pem
+*.key
+
+# ===== 数据文件（含用户隐私，不能上传）=====
+backend/app.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+_backup_*/
+
+# ===== Python =====
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ===== 系统/编辑器 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/

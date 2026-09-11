@@ -1,0 +1,144 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 隐私协议弹窗 -->
+  <view class="privacy-overlay" wx:if="{{!privacyAgreed}}">
+    <view class="privacy-box">
+      <view class="privacy-title">🛡️ 隐私保护协议</view>
+      <view class="privacy-content">
+        为了保障您的权益，我们承诺严格保护您的隐私数据。
+        您需要同意本协议方可使用全部功能。
+        <text class="privacy-tip">（包含提交材料、风险自查对等）</text>
+      </view>
+      <view class="privacy-links">
+        <text class="privacy-link" bindtap="goAgreement" data-type="user">《用户服务协议》</text>
+        <text class="privacy-link" bindtap="goAgreement" data-type="privacy">《隐私政策》</text>
+      </view>
+      <button class="btn-agree" bindtap="agreePrivacy">同意并继续</button>
+      <button class="btn-refuse" bindtap="refusePrivacy">拒绝使用</button>
+    </view>
+  </view>
+
+  <!-- 顶部搜索区 -->
+  <view class="search-section">
+    <view class="search-title">风险查询</view>
+    <view class="search-subtitle">输入账号UID，查询风险行为参考记录</view>
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="输入账号UID，查询风险行为参考"
+        placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearch"
+      />
+      <view class="search-btn" bindtap="onSearch">🔍</view>
+    </view>
+    <view class="search-actions">
+      <view class="photo-match-btn" bindtap="onPhotoMatch">
+        <text>📷 风险自查</text>
+        <text class="photo-vip-tag">VIP</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- VIP开通引导条 -->
+  <view class="quota-card {{queryInfo.isVip ? 'vip-quota' : 'free-quota'}}">
+    <block wx:if="{{queryInfo.isVip}}">
+      <view class="quota-left">
+        <view class="quota-title">👑 VIP会员</view>
+        <view class="quota-desc">剩余 <text class="quota-num">{{queryInfo.vipCount}}</text> 次查询</view>
+      </view>
+      <view class="quota-right" bindtap="goVip">
+        <text class="quota-expire">{{vipExpireText}}到期</text>
+        <text class="quota-renew">续费 ›</text>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="quota-left">
+        <view class="quota-title">开通VIP，解锁查询功能</view>
+        <view class="quota-desc">年卡80次查询（50次+赠30次），查看历史记录</view>
+      </view>
+      <view class="quota-right vip-btn" bindtap="goVip">
+        <text>立即开通</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 功能导航 -->
+  <view class="nav-section">
+    <view class="nav-grid">
+      <view class="nav-item" bindtap="goComplaint">
+        <view class="nav-icon nav-icon-blue">🛡️</view>
+        <view class="nav-label">提交材料</view>
+        <view class="nav-badge">免费</view>
+      </view>
+      <view class="nav-item" bindtap="onPhotoMatch">
+        <view class="nav-icon nav-icon-orange">🔍</view>
+        <view class="nav-label">风险自查</view>
+        <view class="nav-badge nav-badge-vip">VIP</view>
+      </view>
+      <view class="nav-item" bindtap="goProfile">
+        <view class="nav-icon nav-icon-green">⚖️</view>
+        <view class="nav-label">查询进度</view>
+        <view class="nav-badge">免费</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近查询（仅VIP可见） -->
+  <view class="recent-section" wx:if="{{queryInfo.isVip && recentQueries.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">最近查询</text>
+      <text class="section-more" bindtap="goQueryHistory">全部 ›</text>
+    </view>
+    <view class="recent-list">
+      <view class="recent-item" wx:for="{{recentQueries}}" wx:key="id" bindtap="onRecentClick" data-uid="{{item.targetUid}}">
+        <view class="recent-avatar">👤</view>
+        <view class="recent-info">
+          <view class="recent-id">{{item.targetUid}}</view>
+          <view class="recent-meta">{{item.platform}} · {{item.timeText}}</view>
+        </view>
+        <view class="recent-risk risk-{{item.riskLevel}}">{{item.riskText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部数据规模提示 -->
+  <!--<view class="footer-tip">
+    已收录 <text class="footer-num">12,345</text> 条相关对象记录，持续更新中
+  </view>-->
+
+  <!-- 付费解锁弹窗 -->
+  <view class="pay-modal-mask" wx:if="{{showPay}}" bindtap="hidePayModal">
+    <view class="pay-modal" catchtap="stopPropagation">
+      <view class="pay-close" bindtap="hidePayModal">×</view>
+      <view class="pay-title">解锁完整查询报告</view>
+      <view class="pay-benefits">
+        <view class="benefit-item">✅ 查看历史记录及证据</view>
+        <view class="benefit-item">✅ 风险自查匹配详情</view>
+        <view class="benefit-item">✅ 风险等级分析</view>
+        <view class="benefit-item">✅ 年卡80次查询额度（50次+赠30次）</view>
+      </view>
+      <!-- VIP选项 -->
+      <view class="pay-option pay-option-vip {{selectedOption === 'vip' ? 'selected' : ''}}" bindtap="selectPayOption" data-option="vip">
+        <view class="option-badge">推荐</view>
+        <view class="option-main">
+          <view class="option-name">开通VIP年卡</view>
+          <view class="option-desc">¥399/年 · 80次查询（50次+赠30次）</view>
+        </view>
+      </view>
+      <!-- 单次查询选项 -->
+      <view class="pay-option {{selectedOption === 'single' ? 'selected' : ''}}" bindtap="selectPayOption" data-option="single">
+        <view class="option-main">
+          <view class="option-name">单次查询</view>
+          <view class="option-desc">¥9.9/次 · 本次查询解锁全部内容</view>
+        </view>
+      </view>
+      <button class="btn-primary pay-confirm" bindtap="confirmPay">
+        {{selectedOption === 'vip' ? '立即开通VIP ¥399' : '单次查询 ¥9.9'}}
+      </button>
+      <view class="pay-agreement">开通即表示同意《VIP会员服务协议》</view>
+    </view>
+  </view>
+</view>

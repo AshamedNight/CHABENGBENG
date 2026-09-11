@@ -1,0 +1,49 @@
+<!--pages/order-list/order-list.wxml-->
+<view class="container">
+  <view class="tabs">
+    <view class="tab {{activeTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab {{activeTab === 'vip' ? 'active' : ''}}" bindtap="switchTab" data-tab="vip">VIP会员</view>
+    <view class="tab {{activeTab === 'single' ? 'active' : ''}}" bindtap="switchTab" data-tab="single">单次查询</view>
+    <view class="tab {{activeTab === 'service' ? 'active' : ''}}" bindtap="switchTab" data-tab="service">维权服务</view>
+  </view>
+  <view class="order-list" wx:if="{{filteredOrders.length > 0}}">
+    <view class="order-item" wx:for="{{filteredOrders}}" wx:key="id">
+      <view class="order-header">
+        <text class="order-name">{{item.productName}}</text>
+        <text class="order-status {{item.payStatus}}">{{item.statusText}}</text>
+      </view>
+      <view class="order-body">
+        <view class="order-info">
+          <view class="order-row">
+            <text class="order-label">订单号</text>
+            <text class="order-value">{{item.orderNo || item.id}}</text>
+          </view>
+          <view class="order-row">
+            <text class="order-label">支付时间</text>
+            <text class="order-value">{{item.timeText}}</text>
+          </view>
+          <view class="order-row" wx:if="{{item.singleQueryTargetUid}}">
+            <text class="order-label">查询对象</text>
+            <text class="order-value">{{item.singleQueryTargetUid}}</text>
+          </view>
+          <view class="order-row" wx:if="{{item.relatedComplaintId}}">
+            <text class="order-label">关联材料单</text>
+            <text class="order-value">{{item.relatedComplaintId}}</text>
+          </view>
+          <view class="order-row" wx:if="{{item.serviceStatus}}">
+            <text class="order-label">服务状态</text>
+            <text class="order-value">{{item.serviceStatus === 'pending' ? '待处理' : item.serviceStatus === 'processing' ? '处理中' : '已完成'}}</text>
+          </view>
+        </view>
+        <view class="order-amount">
+          <text class="amount-symbol">¥</text>
+          <text class="amount-num">{{item.amount}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">📦</view>
+    <view class="empty-text">暂无订单记录</view>
+  </view>
+</view>

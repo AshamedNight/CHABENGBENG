@@ -1,0 +1,79 @@
+<!--pages/photo-match/photo-match.wxml-->
+<view class="container">
+  <!-- 上传区域 -->
+  <view class="upload-section">
+    <view class="upload-title">上传照片进行风险自查</view>
+    <view class="upload-desc">上传照片/头像截图，智能匹配相关对象风险记录</view>
+
+    <view class="upload-area" wx:if="{{!uploadedImage}}" bindtap="choosePhoto">
+      <view class="upload-icon">📷</view>
+      <view class="upload-text">点击上传照片</view>
+      <view class="upload-tip">支持JPG/PNG格式，单张≤5MB</view>
+    </view>
+
+    <view class="preview-area" wx:else>
+      <image class="preview-image" src="{{uploadedImage}}" mode="aspectFit"></image>
+      <view class="preview-actions">
+        <view class="action-btn rechoose" bindtap="rechoose">重新选择</view>
+        <view class="action-btn match-btn" bindtap="startMatch" wx:if="{{!matched}}">
+          <text wx:if="{{!matching}}">开始比对</text>
+          <text wx:else>比对中...</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 比对中 -->
+  <view class="loading-section" wx:if="{{matching}}">
+    <view class="loading-icon">🔄</view>
+    <view class="loading-text">正在智能比对中，请稍候...</view>
+  </view>
+
+  <!-- 比对结果 -->
+  <view class="result-section" wx:if="{{matched && !matching}}">
+    <view class="result-header">
+      <text class="result-title">找到 {{matches.length}} 条相关结果</text>
+    </view>
+
+    <!-- 有匹配结果 -->
+    <view class="match-list" wx:if="{{matches.length > 0}}">
+      <view
+        class="match-item"
+        wx:for="{{matches}}"
+        wx:key="id"
+        bindtap="onMatchTap"
+        data-match="{{item}}"
+      >
+        <view class="match-avatar">
+          <image wx:if="{{item.personPhoto}}" src="{{item.personPhoto}}" mode="aspectFill"></image>
+          <text wx:else>👤</text>
+        </view>
+        <view class="match-info">
+          <view class="match-uid">{{item.targetUid}}</view>
+          <view class="match-meta">
+            <text class="match-platform">{{item.platform}}</text>
+            <text class="match-complaints">累计{{item.complaintCount}}条记录</text>
+          </view>
+        </view>
+        <view class="match-rate">
+          <text class="rate-num">{{item.matchRate}}%</text>
+          <text class="rate-label">匹配度</text>
+        </view>
+        <view class="match-arrow">›</view>
+      </view>
+    </view>
+
+    <!-- 无匹配结果 -->
+    <view class="no-match" wx:else>
+      <view class="no-match-icon">🔍</view>
+      <view class="no-match-title">未找到相关对象</view>
+      <view class="no-match-desc">您可以提交材料成为首个记录人</view>
+      <button class="btn-primary no-match-btn" bindtap="goComplaint">去提交材料</button>
+    </view>
+
+    <!-- 提示 -->
+    <view class="result-tip" wx:if="{{matches.length > 0}}">
+      <text>💡 点击查看相关对象详情，计为一次查询（同一对象24小时内不重复扣次）</text>
+    </view>
+  </view>
+</view>

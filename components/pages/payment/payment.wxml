@@ -1,0 +1,62 @@
+<!--pages/payment/payment.wxml-->
+<view class="container">
+
+  <!-- 商品信息 -->
+  <view class="product-card">
+    <view class="product-icon">{{productIcon}}</view>
+    <view class="product-info">
+      <view class="product-name">{{productName}}</view>
+      <view class="product-desc">{{productDesc}}</view>
+    </view>
+    <view class="product-amount">¥{{amount}}</view>
+  </view>
+
+  <!-- 支付明细 -->
+  <view class="detail-card">
+    <view class="detail-row">
+      <text class="detail-label">商品金额</text>
+      <text class="detail-value">¥{{amount}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-label">优惠</text>
+      <text class="detail-value discount">-¥0.00</text>
+    </view>
+    <view class="divider"></view>
+    <view class="detail-row total">
+      <text class="detail-label">实付金额</text>
+      <text class="detail-value total-amount">¥{{amount}}</text>
+    </view>
+  </view>
+
+  <!-- 支付方式 -->
+  <view class="pay-method-card">
+    <view class="method-title">支付方式</view>
+    <view class="method-item selected">
+      <view class="method-left">
+        <text class="method-icon">💚</text>
+        <text class="method-name">微信支付</text>
+      </view>
+      <view class="method-radio">●</view>
+    </view>
+  </view>
+
+  <!-- 底部支付按钮 -->
+  <view class="bottom-bar safe-bottom">
+    <view class="pay-info">
+      <text class="pay-label">合计：</text>
+      <text class="pay-amount">¥{{amount}}</text>
+    </view>
+    <button class="pay-btn" bindtap="doPay" loading="{{paying}}">确认支付</button>
+  </view>
+
+  <!-- 支付成功弹窗 -->
+  <view class="success-mask" wx:if="{{showSuccess}}">
+    <view class="success-box">
+      <view class="success-icon">✅</view>
+      <view class="success-title">支付成功</view>
+      <view class="success-desc">{{successDesc}}</view>
+      <button class="success-btn" bindtap="onSuccessConfirm">{{successBtnText}}</button>
+    </view>
+  </view>
+
+</view>

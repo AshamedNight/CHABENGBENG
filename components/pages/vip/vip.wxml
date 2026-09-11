@@ -1,0 +1,88 @@
+<!--pages/vip/vip.wxml-->
+<view class="container">
+  <!-- 顶部Banner -->
+  <view class="vip-banner">
+    <view class="banner-content">
+      <view class="banner-title">👑 VIP会员</view>
+      <view class="banner-subtitle">年卡80次查询（50次+赠30次），风险自查，维权辅助</view>
+      <view class="banner-status" wx:if="{{isVip}}">
+        <text class="status-text">会员有效期至 {{vipExpireText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 会员权益 -->
+  <view class="benefits-section">
+    <view class="section-title">会员专属权益</view>
+    <view class="benefits-grid">
+      <view class="benefit-item">
+        <view class="benefit-icon">🔍</view>
+        <view class="benefit-name">年卡80次查询</view>
+        <view class="benefit-desc">50次+赠30次，随便查</view>
+      </view>
+      <view class="benefit-item">
+        <view class="benefit-icon">📋</view>
+        <view class="benefit-name">完整历史记录</view>
+        <view class="benefit-desc">历史记录+证据图片</view>
+      </view>
+      <view class="benefit-item">
+        <view class="benefit-icon">🖼️</view>
+        <view class="benefit-name">风险自查</view>
+        <view class="benefit-desc">智能匹配相关对象</view>
+      </view>
+      <view class="benefit-item">
+        <view class="benefit-icon">⚡</view>
+        <view class="benefit-name">优先服务</view>
+        <view class="benefit-desc">维权服务优先响应</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 套餐选择 -->
+  <view class="plans-section">
+    <view class="section-title">选择套餐</view>
+    <view class="plans-list plans-list-single">
+      <view
+        class="plan-item plan-item-year selected"
+      >
+        <view class="plan-badge">限时特惠</view>
+        <view class="plan-name">VIP年卡</view>
+        <view class="plan-price">
+          <text class="price-symbol">¥</text>
+          <text class="price-num">399</text>
+        </view>
+        <view class="plan-original">¥598.8</view>
+        <view class="plan-unit">/年 · 80次查询</view>
+        <view class="plan-gift">🎁 充50次送30次，共80次</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 单次查询提示 -->
+  <view class="single-tip">
+    <text>不需要年卡？</text>
+    <text class="single-link" bindtap="goSinglePay">单次查询 ¥9.9/次 ›</text>
+  </view>
+
+  <!-- FAQ -->
+  <view class="faq-section">
+    <view class="section-title">常见问题</view>
+    <view class="faq-list">
+      <view class="faq-item" wx:for="{{faqs}}" wx:key="q">
+        <view class="faq-q" bindtap="toggleFaq" data-index="{{index}}">
+          <text>{{item.q}}</text>
+          <text class="faq-arrow {{item.open ? 'open' : ''}}">›</text>
+        </view>
+        <view class="faq-a" wx:if="{{item.open}}">{{item.a}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部开通按钮 -->
+  <view class="bottom-bar safe-bottom">
+    <button class="btn-vip" bindtap="goPay">
+      {{isVip ? '立即续费' : '立即开通'}} ¥399
+    </button>
+    <view class="agreement">开通即表示同意《VIP会员服务协议》</view>
+  </view>
+</view>

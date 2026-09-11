@@ -1,0 +1,121 @@
+<!--pages/complaint-detail/complaint-detail.wxml-->
+<view class="container" wx:if="{{complaint}}">
+  <!-- 状态卡片 -->
+  <view class="status-card">
+    <view class="status-icon">📋</view>
+    <view class="status-text">{{complaint.status}}</view>
+    <view class="status-no">单号：{{complaint.orderNo}}</view>
+  </view>
+
+  <!-- 进度时间线 -->
+  <view class="timeline-card">
+    <view class="timeline-title">处理进度</view>
+    <view class="timeline-list">
+      <view class="timeline-item done">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-label">已提交</view>
+          <view class="timeline-time">{{complaint.timeText}}</view>
+        </view>
+      </view>
+      <view class="timeline-item {{complaint.status === '待处理' ? 'active' : 'done'}}">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-label">平台受理中</view>
+          <view class="timeline-time" wx:if="{{complaint.status !== '待处理'}}">{{complaint.timeText}}</view>
+          <view class="timeline-time" wx:else>等待审核...</view>
+        </view>
+      </view>
+      <view class="timeline-item {{complaint.status === '处理完毕' || complaint.status === '已驳回' ? 'done' : ''}}">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-label">{{complaint.status === '处理完毕' ? '维权成功' : complaint.status === '已驳回' ? '已驳回' : '处理完成'}}</view>
+          <view class="timeline-time" wx:if="{{complaint.status === '处理完毕' || complaint.status === '已驳回'}}">{{complaint.timeText}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 投诉详情 -->
+  <view class="detail-card">
+    <view class="detail-title">提交详情</view>
+    <view class="detail-row">
+      <text class="detail-label">相关平台</text>
+      <text class="detail-value">{{complaint.platform}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-label">相关对象UID</text>
+      <text class="detail-value">{{complaint.targetUid}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-label">允许当事人联系</text>
+      <switch checked="{{allowContact}}" bindchange="onAllowContactChange" color="#1677FF"/>
+    </view>
+    <view class="detail-row detail-row-column" wx:if="{{complaint.description}}">
+      <text class="detail-label">说明</text>
+      <text class="detail-value detail-desc">{{complaint.description}}</text>
+    </view>
+
+    <!-- 人物照片 -->
+    <view class="detail-row detail-row-column" wx:if="{{complaint.personPhotos && complaint.personPhotos.length > 0}}">
+      <text class="detail-label">人物照片</text>
+      <view class="image-grid">
+        <image
+          wx:for="{{complaint.personPhotos}}"
+          wx:key="*this"
+          class="detail-image"
+          src="{{item}}"
+          mode="aspectFill"
+          bindtap="previewImage"
+          data-url="{{item}}"
+          data-urls="{{complaint.personPhotos}}"
+        ></image>
+      </view>
+    </view>
+
+    <!-- 帐号截图 -->
+    <view class="detail-row detail-row-column" wx:if="{{complaint.accountScreenshots && complaint.accountScreenshots.length > 0}}">
+      <text class="detail-label">相关人平台帐号截图</text>
+      <view class="image-grid">
+        <image
+          wx:for="{{complaint.accountScreenshots}}"
+          wx:key="*this"
+          class="detail-image large"
+          src="{{item}}"
+          mode="aspectFill"
+          bindtap="previewImage"
+          data-url="{{item}}"
+          data-urls="{{complaint.accountScreenshots}}"
+        ></image>
+      </view>
+    </view>
+
+    <!-- 证据照片 -->
+    <view class="detail-row detail-row-column" wx:if="{{complaint.evidenceImages && complaint.evidenceImages.length > 0}}">
+      <text class="detail-label">证据照片</text>
+      <view class="image-grid">
+        <image
+          wx:for="{{complaint.evidenceImages}}"
+          wx:key="*this"
+          class="detail-image"
+          src="{{item}}"
+          mode="aspectFill"
+          bindtap="previewImage"
+          data-url="{{item}}"
+          data-urls="{{complaint.evidenceImages}}"
+        ></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar safe-bottom">
+    <button class="btn-outline" bindtap="queryTarget">查询该对象</button>
+    <button class="btn-primary" bindtap="contactService">联系客服</button>
+  </view>
+</view>
+
+<view class="empty-state" wx:else>
+  <view class="empty-icon">📭</view>
+  <view class="empty-text">投诉单不存在</view>
+</view>

@@ -1,0 +1,47 @@
+<!--pages/profile-edit/profile-edit.wxml-->
+<view class="container">
+  <!-- 头像编辑 -->
+  <block wx:if="{{type === 'avatar'}}">
+    <view class="edit-section">
+      <view class="section-title">设置头像</view>
+      <view class="avatar-preview" bindtap="chooseAvatar">
+        <image wx:if="{{avatar}}" class="avatar-image" src="{{avatar}}" mode="aspectFill"></image>
+        <view wx:else class="avatar-placeholder">
+          <text class="placeholder-icon">👤</text>
+          <text class="placeholder-text">点击上传头像</text>
+        </view>
+        <view class="avatar-edit-badge">✏️</view>
+      </view>
+      <view class="avatar-tip">头像将在"允许当事人联系"的投诉记录中对外展示</view>
+    </view>
+  </block>
+
+  <!-- 昵称编辑 -->
+  <block wx:if="{{type === 'nickname'}}">
+    <view class="edit-section">
+      <view class="section-title">设置昵称</view>
+      <view class="input-wrapper">
+        <input
+          class="nickname-input"
+          placeholder="请输入昵称"
+          placeholder-class="input-placeholder"
+          value="{{nickname}}"
+          bindinput="onNicknameInput"
+          maxlength="12"
+          focus="{{true}}"
+        />
+        <view class="char-count">{{nickname.length}}/12</view>
+      </view>
+      <view class="nickname-rules">
+        <view class="rule-item">• 昵称长度为2-12个字符</view>
+        <view class="rule-item">• 支持中文、英文、数字、下划线</view>
+        <view class="rule-item">• 昵称将在"允许当事人联系"的投诉记录中对外展示</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 保存按钮 -->
+  <view class="save-section safe-bottom">
+    <button class="btn-primary save-btn" bindtap="save" loading="{{saving}}">保存</button>
+  </view>
+</view>

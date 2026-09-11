@@ -1,0 +1,58 @@
+<!--pages/service-contact/service-contact.wxml-->
+<view class="container">
+  <!-- 服务说明 -->
+  <view class="info-card">
+    <view class="info-icon">💬</view>
+    <view class="info-title">联系处理服务</view>
+    <view class="info-desc">联系该记录的处理人员，沟通维权进展。专业客服将在24小时内与您对接，协助推进材料处理。</view>
+    <view class="info-complaint">关联材料单：{{complaintNo}}</view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-card">
+    <view class="input-group">
+      <text class="label">沟通内容 <text class="required">*</text></text>
+      <textarea
+        class="form-textarea"
+        placeholder="请描述您希望与处理人员沟通的内容，如维权进展、补充证据、疑问咨询等"
+        value="{{message}}"
+        bindinput="onMessageInput"
+        maxlength="500"
+      ></textarea>
+      <view class="char-count">{{message.length}}/500</view>
+    </view>
+
+    <view class="input-group">
+      <text class="label">联系方式 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="请填写您的手机号或微信号，方便工作人员联系您"
+        value="{{contactInfo}}"
+        bindinput="onContactInput"
+      />
+    </view>
+  </view>
+
+  <!-- 服务保障 -->
+  <view class="guarantee-card">
+    <view class="guarantee-title">服务保障</view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">24小时内专业客服响应</text>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">一对一专属对接，全程跟进</text>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">隐私保护，信息加密传输</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section safe-bottom">
+    <button class="btn-primary submit-btn" bindtap="submit" loading="{{submitting}}">提交联系申请</button>
+    <view class="submit-tip">* 本服务为付费维权服务，费用¥299/次</view>
+  </view>
+</view>

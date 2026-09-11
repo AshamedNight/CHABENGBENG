@@ -1,0 +1,58 @@
+<!--pages/service-dispute/service-dispute.wxml-->
+<view class="container">
+  <!-- 服务说明 -->
+  <view class="info-card">
+    <view class="info-icon">📝</view>
+    <view class="info-title">提起异议服务</view>
+    <view class="info-desc">对该记录的真实性或处理结果提出异议，专业维权团队将在24小时内与您联系，协助跟进处理。</view>
+    <view class="info-complaint">关联材料单：{{complaintNo}}</view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-card">
+    <view class="input-group">
+      <text class="label">异议原因 <text class="required">*</text></text>
+      <textarea
+        class="form-textarea"
+        placeholder="请详细描述您的异议原因，包括认为记录不实或处理不当的具体理由"
+        value="{{reason}}"
+        bindinput="onReasonInput"
+        maxlength="500"
+      ></textarea>
+      <view class="char-count">{{reason.length}}/500</view>
+    </view>
+
+    <view class="input-group">
+      <text class="label">联系方式 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="请填写您的手机号或微信号，方便工作人员联系您"
+        value="{{contactInfo}}"
+        bindinput="onContactInput"
+      />
+    </view>
+  </view>
+
+  <!-- 服务保障 -->
+  <view class="guarantee-card">
+    <view class="guarantee-title">服务保障</view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">24小时内专业团队响应</text>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">全程隐私保护，信息加密</text>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">✅</text>
+      <text class="guarantee-text">维权进度实时可查</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section safe-bottom">
+    <button class="btn-primary submit-btn" bindtap="submit" loading="{{submitting}}">提交异议申请</button>
+    <view class="submit-tip">* 本服务为付费维权服务，费用¥299/次</view>
+  </view>
+</view>
